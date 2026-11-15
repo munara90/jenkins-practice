@@ -1,0 +1,83 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+  schedule:
+    # GitHub Actions schedules use UTC. The gate job selects 11:00 AM Central Time.
+    - cron: '0 16 * * *'
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+
+jobs:
+  schedule-gate:
+    if: github.event_name == 'schedule'
+    runs-on: windows-latest
+    timeout-minutes: 5
+    outputs:
+      run_tests: ${{ steps.central-time.outputs.run_tests }}
+
+    steps:
+      - name: Check Central Time
+        id: central-time
+        shell: pwsh
+        run: |
+          $timeZone = [TimeZoneInfo]::FindSystemTimeZoneById('Central Standard Time')
+          $centralTime = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTimeOffset]::UtcNow, $timeZone.Id)
+          $shouldRun = $centralTime.Hour -eq 11
+          "run_tests=$($shouldRun.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+  test:
+    needs: schedule-gate
+    if: >-
+      always() && (github.event_name != 'pull_request' ||
+      github.event.pull_request.merged == true) && (github.event_name != 'schedule' ||
+      needs.schedule-gate.outputs.run_tests == 'true')
+    runs-on: windows-latest
+    timeout-minutes: 55
+    env:
+      PRACTICE_USERNAME: ${{ secrets.PRACTICE_USERNAME }}
+      PRACTICE_PASSWORD: ${{ secrets.PRACTICE_PASSWORD }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
+
+      - name: Run Playwright tests
+        run: npm run tests:headless
+
+      - name: Upload Playwright HTML report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: playwright-report/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload Playwright test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 30

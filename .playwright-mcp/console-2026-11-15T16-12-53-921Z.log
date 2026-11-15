@@ -1,0 +1,6 @@
+[      40ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8080/job/jenkins-practice/configure:1
+[     124ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:8080/login?from=%2Fjob%2Fjenkins-practice%2Fconfigure:1
+[   13601ms] [WARNING] Couldn't find the expected validation element (.validation-error-area) for element JSHandle@node @ http://localhost:8080/static/cae5b249/scripts/hudson-behavior.js:717
+[   13603ms] [WARNING] Couldn't find the expected status element @ http://localhost:8080/adjuncts/cae5b249/lib/form/select/select.js:36
+[   13757ms] [WARNING] Adapted element to new markup, it should be changed to use f:repeatableDeleteButton instead in the plugin JSHandle@node @ http://localhost:8080/adjuncts/cae5b249/lib/form/repeatable/repeatable.js:215
+[  199794ms] [WARNING] Adapted element to new markup, it should be changed to use f:repeatableDeleteButton instead in the plugin JSHandle@node @ http://localhost:8080/adjuncts/cae5b249/lib/form/repeatable/repeatable.js:215
